@@ -194,3 +194,28 @@ main{
 		}
 	}
 }
+
+
+
+//slidermain-items
+.slidermain-items{
+	.flickity-slider{
+		left: 0 !important;
+		transform: none !important;
+	}
+	figure{
+		left: 0 !important;
+		width: 100%;
+		perspective-origin: 0 50%;
+		perspective: 500px;
+		.img-content{
+			opacity: 0;
+			transition: all 1s ease;
+		}
+		&.is-selected{
+			.img-content{
+				opacity: 1;
+			}
+		}
+	}
+}

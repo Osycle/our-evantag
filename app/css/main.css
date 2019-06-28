@@ -8201,6 +8201,27 @@ main p {
     font-weight: 600;
     font-family: "Georgia"; }
 
+.slidermain-items .flickity-slider {
+  left: 0 !important;
+  -webkit-transform: none !important;
+  -ms-transform: none !important;
+  transform: none !important; }
+
+.slidermain-items figure {
+  left: 0 !important;
+  width: 100%;
+  -webkit-perspective-origin: 0 50%;
+  perspective-origin: 0 50%;
+  -webkit-perspective: 500px;
+  perspective: 500px; }
+  .slidermain-items figure .img-content {
+    opacity: 0;
+    -webkit-transition: all 1s ease;
+    -o-transition: all 1s ease;
+    transition: all 1s ease; }
+  .slidermain-items figure.is-selected .img-content {
+    opacity: 1; }
+
 /*
 										---FOOTER---
 */

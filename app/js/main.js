@@ -58,6 +58,128 @@
 
 
 
+
+
+
+
+		//Основной Слайдер
+		window.slidermain = $(".slidermain-items").flickity({
+			imagesLoaded: true,
+			autoPlay: 1000,
+			pauseAutoPlayOnHover: true,
+			//arrowShape: arrowStyle,
+			initialIndex: 0,
+			prevNextButtons: false,
+			draggable: false,
+			wrapAround: true,
+			friction: 1,
+			selectedAttraction: 1,
+			pageDots: false,
+			contain: false,
+			percentPosition: true,
+			cellSelector: 'figure',
+			cellAlign: "center"
+		});
+		slidermain.data("flickity");
+		$('.page-wrapper').on( 'click', );
+
+		
+
+		slidermain.on( 'select.flickity', function( event, index ) {
+			var maxLenght = 5;
+			var slides = $(".slider-item");
+			var currentIndex = $(".slider-item").filter(".is-selected").index();
+			var lastIndex = slides.eq( $(".slider-item").length-1 ).index() ;
+			var slidesLength = $(".slider-item").length;
+
+			if( lastIndex == currentIndex && true){
+				slidermain.flickity('stopPlayer');
+				Pic.parser();
+			}
+			//console.log(slidesLength);
+			if( maxLenght <= slidesLength ){
+				slidermain.flickity('remove', slides.eq(0));
+			}
+
+		  //console.log( lastIndex, currentIndex);
+		});
+
+		window.Pic = {
+			currentId: 0,
+			inc: 0,
+			appendTemplate:  function ( id, img ) {
+			  var template = 
+				  $(
+						'<figure  class="slider-item" id-data="' + id + '">'+
+							'<div class="img-content">'+
+								'<div class="img-wrapper">'+
+									'<div class="img" style="background-image: url(\'' + img + '\');"></div>'+
+									'<div class="img mirror" style="background-image: url(\'' + img + '\');"></div>'+
+								'</div>'+
+							'</div>'+
+						'</figure>'
+					);
+			  slidermain.flickity( 'append', template );
+			},
+			parser: function(){
+				var that = this;
+				var inc = this.inc;
+				$.ajax({
+					type: "POST",
+					url: "http://192.168.1.60/modules/getMedias.php",
+					data: {
+						inc: inc
+					},
+					success: function(data){
+				
+						try{
+							data = JSON.parse(data);
+							//console.log( typeof data.length );
+						}catch(err){
+							//console.error( err );
+							slidermain.flickity('playPlayer');
+							return;
+						}
+						
+
+						$(data).map(function( i, el ){
+							console.log(el);
+							that.appendTemplate( el.mediaId, el.mediaUrl);
+						});
+						slidermain.flickity('playPlayer');
+						that.inc++;
+						console.log(inc);
+					},
+					//contentType: "Content-Type:application/json;",
+					statusCode: {
+						404: function(){alert( "page not found" );}
+					}
+				});
+			},
+			selectId: function ( id ) {
+				var index = slidermain.find( "[id-data=" + id + "]" ).eq(0).index();
+				slidermain.flickity( 'select', index );
+			}	
+		}
+
+
+
+
+
+
+
+		///appendTemplate( 14, "img/slider/wedding-3.jpg" );
+
+
+
+
+
+
+
+
+
+
+
 		function onLoaded() {
 			$(window).trigger("resize");
 		}
@@ -72,11 +194,6 @@
 				text = text.substring(0, textLimit )
 				el.text( text+ " ..." );
 			}
-		})
-
-
-		$(".parallax-scene").map(function(i, el){
-			var parallaxInstance = new Parallax(el);
 		})
 
 		//SCROLL
@@ -104,13 +221,14 @@
 			var scaleH = winWidth / boxWidth;
 			var scaleV; 
 
-		 	var boxHeightOrigin = boxHeight * scaleH;
+		 	//var boxHeightOrigin = boxHeight * scaleH;
 
-			if( boxHeightOrigin > winHeight){
-				scaleV = winHeight / boxHeightOrigin;	
-				scaleH = scaleH - (1 - scaleV);
-				console.log(scaleH, scaleV);
-			}
+			//if( boxHeightOrigin > winHeight){
+				scaleV = winHeight / boxHeight;	
+				//scaleH = scaleH - (1 - scaleV);
+				//console.log(scaleH, scaleV);
+			//}
+
 			// console.log(
 			// 	"winWidth: "+winWidth+"\n", 
 			// 	"winHeight: "+winHeight+"\n", 
@@ -121,8 +239,9 @@
 			// 	"scaleV: "+scaleV+"\n", 
 			// 	"scale: "+scale+"\n" 
 			// 	);
+
 			$(widthClass).css({
-				transform: "scale(" + scaleH + ")"
+				transform: "scaleY(" + scaleV + ")"
 			});
 
 		
@@ -220,7 +339,7 @@ function intSpace( int, replaceType ){
 
 /* СЛАЙДЕР */
 var slideIndex = 0;
-showSlides();
+//showSlides();
 
 function plusSlides(n) {
     showSlides(slideIndex += n);
@@ -268,8 +387,11 @@ function showSlides() {
     if (slideIndex == slides.length) {
         setTimeout(function() {
             //location.reload();
-        }, 200000);
+        }, 2000);
     } else {
-        setTimeout(showSlides, 200000); // Change image every 2 seconds
+        setTimeout(showSlides, 2000); // Change image every 2 seconds
     }
 }
+//http://192.168.1.60/modules/changeShowed.php
+
+

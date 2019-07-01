@@ -91,17 +91,23 @@
 			var currentIndex = $(".slider-item").filter(".is-selected").index();
 			var lastIndex = slides.eq( $(".slider-item").length-1 ).index() ;
 			var slidesLength = $(".slider-item").length;
-
+			console.log("onselect");
 			if( lastIndex == currentIndex && true){
 				slidermain.flickity('stopPlayer');
 				Pic.parser();
 			}
 			//console.log(slidesLength);
+		  //console.log( lastIndex, currentIndex);
+		});
+		slidermain.on( 'settle.flickity', function( event, index ) {
+			var maxLenght = 5;
+			var slides = $(".slider-item");
+			var currentIndex = $(".slider-item").filter(".is-selected").index();
+			var lastIndex = slides.eq( $(".slider-item").length-1 ).index() ;
+			var slidesLength = $(".slider-item").length;
 			if( maxLenght <= slidesLength ){
 				slidermain.flickity('remove', slides.eq(0));
 			}
-
-		  //console.log( lastIndex, currentIndex);
 		});
 
 		window.Pic = {

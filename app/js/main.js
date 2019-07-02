@@ -83,32 +83,31 @@
 		slidermain.data("flickity");
 		$('.page-wrapper').on( 'click', );
 
-		
-
-		slidermain.on( 'select.flickity', function( event, index ) {
+		function stepSlide(){
 			var maxLenght = 5;
+			console.log("onselect", event);
 			var slides = $(".slider-item");
 			var currentIndex = $(".slider-item").filter(".is-selected").index();
 			var lastIndex = slides.eq( $(".slider-item").length-1 ).index() ;
 			var slidesLength = $(".slider-item").length;
-			console.log("onselect");
 			if( lastIndex == currentIndex && true){
 				slidermain.flickity('stopPlayer');
-				Pic.parser();
+				//Pic.parser();
 			}
 			//console.log(slidesLength);
 		  //console.log( lastIndex, currentIndex);
-		});
-		slidermain.on( 'settle.flickity', function( event, index ) {
-			var maxLenght = 5;
-			var slides = $(".slider-item");
-			var currentIndex = $(".slider-item").filter(".is-selected").index();
-			var lastIndex = slides.eq( $(".slider-item").length-1 ).index() ;
-			var slidesLength = $(".slider-item").length;
 			if( maxLenght <= slidesLength ){
 				slidermain.flickity('remove', slides.eq(0));
 			}
+			//slidermain.off( 'select.flickity');
+		}
+		var currentEl;
+		slidermain.on( 'select.flickity', function( event, index ) {
+			var currentEl = $(".slider-item").filter(".is-selected");
+			//currentEl.attr("")
+			stepSlide();
 		});
+
 
 		window.Pic = {
 			currentId: 0,
@@ -132,7 +131,7 @@
 				var inc = this.inc;
 				$.ajax({
 					type: "POST",
-					url: "http://192.168.1.60/modules/getMedias.php",
+					url: "instagramData.html",//"http://192.168.1.60/modules/getMedias.php"
 					data: {
 						inc: inc
 					},
@@ -225,29 +224,17 @@
 
 			var scale;
 			var scaleH = winWidth / boxWidth;
-			var scaleV; 
+			var scaleV = winHeight / boxHeight;	
 
-		 	//var boxHeightOrigin = boxHeight * scaleH;
+		 	var boxHeightOrigin = boxHeight * scaleH;
 
-			//if( boxHeightOrigin > winHeight){
-				scaleV = winHeight / boxHeight;	
-				//scaleH = scaleH - (1 - scaleV);
-				//console.log(scaleH, scaleV);
-			//}
-
-			// console.log(
-			// 	"winWidth: "+winWidth+"\n", 
-			// 	"winHeight: "+winHeight+"\n", 
-			// 	"boxHeightOrigin: "+boxHeightOrigin+"\n", 
-			// 	"boxWidth: "+boxWidth+"\n", 
-			// 	"boxHeight: "+boxHeight+"\n", 
-			// 	"scaleH: "+scaleH+"\n", 
-			// 	"scaleV: "+scaleV+"\n", 
-			// 	"scale: "+scale+"\n" 
-			// 	);
-
-			$(widthClass).css({
-				transform: "scaleY(" + scaleV + ")"
+			if( boxHeightOrigin < winHeight)
+				scale = scaleH;
+			else
+				scale = scaleV;
+				
+			widthClass.css({
+				transform: "scale(" + scale + ")"
 			});
 
 		

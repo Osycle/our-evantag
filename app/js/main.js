@@ -81,41 +81,68 @@
 			cellAlign: "center"
 		});
 		slidermain.data("flickity");
-		$('.page-wrapper').on( 'click', );
 
-		function stepSlide(){
-			var maxLenght = 5;
-			console.log("onselect", event);
-			var slides = $(".slider-item");
-			var currentIndex = $(".slider-item").filter(".is-selected").index();
-			var lastIndex = slides.eq( $(".slider-item").length-1 ).index() ;
-			var slidesLength = $(".slider-item").length;
-			if( lastIndex == currentIndex && true){
-				slidermain.flickity('stopPlayer');
-				//Pic.parser();
+		function stepSlide(currentSlide){
+
+			console.log("stepSlide");
+
+			
+			
+			var slides = $(Pic.slideItemClass);
+			var currentIndex = Pic.currentSlide.index();
+			var lastIndex = slides.eq( $(Pic.slideItemClass).length-1 ).index() ;
+			var slidesLength = $(Pic.slideItemClass).length;
+
+			if( lastIndex == currentIndex){
+				slidermain.flickity('stopPlayer'); // Остановка слайдера
+				Pic.parser(); // Запрос на картинки
 			}
-			//console.log(slidesLength);
-		  //console.log( lastIndex, currentIndex);
-			if( maxLenght <= slidesLength ){
-				slidermain.flickity('remove', slides.eq(0));
+
+			if( Pic.maxLenght <= slidesLength ){
+				slidermain.flickity('remove', slides.eq(0)); // Удаление элементов слейдера
 			}
-			//slidermain.off( 'select.flickity');
 		}
-		var currentEl;
-		slidermain.on( 'select.flickity', function( event, index ) {
-			var currentEl = $(".slider-item").filter(".is-selected");
-			//currentEl.attr("")
-			stepSlide();
+		var currentSlide;
+
+		// События смены слайды
+		
+
+		// Случайное число
+		function IntRandom(){
+			return Math.round((Math.random() * 1e12))
+		}
+
+		slidermain.on( 'select.flickity', function( event ) {
+			if( typeof figurePrevId == "undefined" )
+				window.figurePrevId = 0;
+
+			var currentSlide = $(Pic.slideItemClass).filter(".is-selected")
+			Pic.currentSlide = currentSlide;;
+			var rand = IntRandom();
+			var selectId = currentSlide.attr("figure-id");
+			
+			if ( selectId && selectId == figurePrevId )
+				return;
+
+			currentSlide.attr("figure-id", rand);
+			figurePrevId = currentSlide.attr("figure-id");
+			stepSlide(currentSlide);
+
 		});
 
 
 		window.Pic = {
-			currentId: 0,
+
+			slideItemClass: ".slider-item", // Класс для элементов слайдера
+			url: "http://192.168.0.117/modules/getMedias.php", // Адрес запроса
+			maxLenght:  5, // Максимальное кол-во элементов в слайдере
 			inc: 0,
+			currentSlide: undefined,
+
 			appendTemplate:  function ( id, img ) {
 			  var template = 
 				  $(
-						'<figure  class="slider-item" id-data="' + id + '">'+
+						'<figure class="slider-item" id-data="' + id + '" figure-id="' + IntRandom() + '" >'+
 							'<div class="img-content">'+
 								'<div class="img-wrapper">'+
 									'<div class="img" style="background-image: url(\'' + img + '\');"></div>'+
@@ -126,38 +153,38 @@
 					);
 			  slidermain.flickity( 'append', template );
 			},
+
 			parser: function(){
+
 				var that = this;
-				var inc = this.inc;
+
 				$.ajax({
 					type: "POST",
-					url: "instagramData.html",//"http://192.168.1.60/modules/getMedias.php"
+					url: that.url,
 					data: {
-						inc: inc
+						inc: that.inc
 					},
 					success: function(data){
 				
 						try{
 							data = JSON.parse(data);
-							//console.log( typeof data.length );
 						}catch(err){
-							//console.error( err );
-							slidermain.flickity('playPlayer');
+							slidermain.flickity('playPlayer'); // Запуск слайдера при отсутствии JSON данных
 							return;
 						}
 						
-
 						$(data).map(function( i, el ){
-							console.log(el);
-							that.appendTemplate( el.mediaId, el.mediaUrl);
+							that.appendTemplate( el.mediaId, el.mediaUrl); // Вставка в слайдер
 						});
-						slidermain.flickity('playPlayer');
+
+						slidermain.flickity('playPlayer'); // Запуск слайдера
 						that.inc++;
-						console.log(inc);
+
 					},
-					//contentType: "Content-Type:application/json;",
 					statusCode: {
-						404: function(){alert( "page not found" );}
+						404: function(){
+							alert( "По адресу: " + Pic.url + " Страницы не найдена" );
+						}
 					}
 				});
 			},

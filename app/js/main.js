@@ -82,27 +82,42 @@
 		});
 		slidermain.data("flickity");
 
+
+
+		var startParseInterval = setInterval(function(){
+			if ( typeof bob == "undefined" ) window.bob = true;
+			if (bob){
+				if($(Pic.slideItemClass).length <= 0){
+					bob = false;
+					console.log
+					Pic.parser(function(){
+						bob = true;
+					})
+				}
+				else
+					clearInterval(startParseInterval);
+			}
+		}, 1000);
+
 		function stepSlide(currentSlide){
 
 			console.log("stepSlide");
 
-			
-			
 			var slides = $(Pic.slideItemClass);
 			var currentIndex = Pic.currentSlide.index();
 			var lastIndex = slides.eq( $(Pic.slideItemClass).length-1 ).index() ;
 			var slidesLength = $(Pic.slideItemClass).length;
 
-			if( lastIndex == currentIndex){
-				slidermain.flickity('stopPlayer'); // Остановка слайдера
-				Pic.parser(); // Запрос на картинки
-			}
-
+			//if( lastIndex == currentIndex){
+			//	slidermain.flickity('stopPlayer'); // Остановка слайдера
+			//	Pic.parser(); // Запрос на картинки
+			//}
+			Pic.parser(); // Запрос на картинки
 			if( Pic.maxLenght <= slidesLength ){
 				slidermain.flickity('remove', slides.eq(0)); // Удаление элементов слейдера
 			}
 		}
-		var currentSlide;
+		
 
 		// События смены слайды
 		
@@ -116,16 +131,16 @@
 			if( typeof figurePrevId == "undefined" )
 				window.figurePrevId = 0;
 
-			var currentSlide = $(Pic.slideItemClass).filter(".is-selected")
-			Pic.currentSlide = currentSlide;;
+			var currentSlide = $(Pic.slideItemClass).filter(".is-selected");
+			Pic.currentSlide = currentSlide;
 			var rand = IntRandom();
-			var selectId = currentSlide.attr("figure-id");
+			var selectId = currentSlide.attr( Pic.attrFigureId );
 			
 			if ( selectId && selectId == figurePrevId )
 				return;
 
-			currentSlide.attr("figure-id", rand);
-			figurePrevId = currentSlide.attr("figure-id");
+			currentSlide.attr(Pic.attrFigureId, rand);
+			figurePrevId = currentSlide.attr(Pic.attrFigureId);
 			stepSlide(currentSlide);
 
 		});
@@ -138,23 +153,18 @@
 			maxLenght:  5, // Максимальное кол-во элементов в слайдере
 			inc: 0,
 			currentSlide: undefined,
+			attrFigureId: "figure-id",
 
 			appendTemplate:  function ( id, img ) {
-			  var template = 
-				  $(
-						'<figure class="slider-item" id-data="' + id + '" figure-id="' + IntRandom() + '" >'+
-							'<div class="img-content">'+
-								'<div class="img-wrapper">'+
-									'<div class="img" style="background-image: url(\'' + img + '\');"></div>'+
-									'<div class="img mirror" style="background-image: url(\'' + img + '\');"></div>'+
-								'</div>'+
-							'</div>'+
-						'</figure>'
-					);
-			  slidermain.flickity( 'append', template );
+
+				var newTemp = this.template	.replace(/{id-data}/gim, id)
+																		.replace(/{img}/gim, img);
+
+			  slidermain.flickity( 'append', $(newTemp) );
+
 			},
 
-			parser: function(){
+			parser: function(callbackFunction){
 
 				var that = this;
 
@@ -165,14 +175,12 @@
 						inc: that.inc
 					},
 					success: function(data){
-				
 						try{
 							data = JSON.parse(data);
 						}catch(err){
 							slidermain.flickity('playPlayer'); // Запуск слайдера при отсутствии JSON данных
 							return;
 						}
-						
 						$(data).map(function( i, el ){
 							that.appendTemplate( el.mediaId, el.mediaUrl); // Вставка в слайдер
 						});
@@ -180,11 +188,16 @@
 						slidermain.flickity('playPlayer'); // Запуск слайдера
 						that.inc++;
 
+						//callback
+						if( typeof callbackFunction == "function" ) callbackFunction();
+
 					},
 					statusCode: {
-						404: function(){
-							alert( "По адресу: " + Pic.url + " Страницы не найдена" );
-						}
+						404: function(){ alert( "По адресу: " + Pic.url + " Страницы не найдена" ); }
+					},
+					complete: function(response){
+						//callback
+						if( typeof callbackFunction == "function" ) callbackFunction();
 					}
 				});
 			},
@@ -193,7 +206,15 @@
 				slidermain.flickity( 'select', index );
 			}	
 		}
-
+		Pic.template = 						
+									'<figure class="slider-item" id-data="{id-data}" ' + Pic.attrFigureId + '="' + IntRandom() + '" >'+
+										'<div class="img-content">'+
+											'<div class="img-wrapper">'+
+												'<div class="img" style="background-image: url(\'{img}\');"></div>'+
+												'<div class="img mirror" style="background-image: url(\'{img}\');"></div>'+
+											'</div>'+
+										'</div>'+
+									'</figure>';
 
 
 

@@ -65,7 +65,7 @@
 		//Основной Слайдер
 		window.slidermain = $(".slidermain-items").flickity({
 			imagesLoaded: true,
-			autoPlay: 1000,
+			autoPlay: 2000,
 			pauseAutoPlayOnHover: true,
 			//arrowShape: arrowStyle,
 			initialIndex: 0,
@@ -89,7 +89,7 @@
 			if (bob){
 				if($(Pic.slideItemClass).length <= 0){
 					bob = false;
-					console.log
+					
 					Pic.parser(function(){
 						bob = true;
 					})
@@ -101,18 +101,30 @@
 
 		function stepSlide(currentSlide){
 
-			console.log("stepSlide");
+			//console.log("stepSlide");
+
+			currentSlide.addClass("is-shown");
 
 			var slides = $(Pic.slideItemClass);
 			var currentIndex = Pic.currentSlide.index();
 			var lastIndex = slides.eq( $(Pic.slideItemClass).length-1 ).index() ;
 			var slidesLength = $(Pic.slideItemClass).length;
 
-			//if( lastIndex == currentIndex){
-			//	slidermain.flickity('stopPlayer'); // Остановка слайдера
-			//	Pic.parser(); // Запрос на картинки
-			//}
-			Pic.parser(); // Запрос на картинки
+			// if( lastIndex == currentIndex){
+			// 	slidermain.flickity('stopPlayer'); // Остановка слайдера
+			// 	Pic.parser(); // Запрос на картинки
+			// }
+
+
+			// Запрос на картинки
+			Pic.parser({
+				success: function(){
+					// if( Pic.statusLastResp ){
+					// 	Pic.selectNewSlide();
+					// 	Pic.statusLastResp = false;
+					// }
+				}
+			}); 
 			if( Pic.maxLenght <= slidesLength ){
 				slidermain.flickity('remove', slides.eq(0)); // Удаление элементов слейдера
 			}
@@ -149,25 +161,22 @@
 		window.Pic = {
 
 			slideItemClass: ".slider-item", // Класс для элементов слайдера
-			url: "http://192.168.0.117/modules/getMedias.php", // Адрес запроса
-			maxLenght:  5, // Максимальное кол-во элементов в слайдере
+			url: "http://192.168.0.125/modules/getMedias.php", // Адрес запроса
+			maxLenght:  6, // Максимальное кол-во элементов в слайдере
 			inc: 0,
 			currentSlide: undefined,
 			attrFigureId: "figure-id",
-
+			statusLastResp: false,
 			appendTemplate:  function ( id, img ) {
-
 				var newTemp = this.template	.replace(/{id-data}/gim, id)
 																		.replace(/{img}/gim, img);
-
 			  slidermain.flickity( 'append', $(newTemp) );
 
 			},
 
-			parser: function(callbackFunction){
+			parser: function(obj){
 
 				var that = this;
-
 				$.ajax({
 					type: "POST",
 					url: that.url,
@@ -175,8 +184,11 @@
 						inc: that.inc
 					},
 					success: function(data){
+
 						try{
 							data = JSON.parse(data);
+							// if( data+"" == "null")
+							// 	Pic.statusLastResp = true;
 						}catch(err){
 							slidermain.flickity('playPlayer'); // Запуск слайдера при отсутствии JSON данных
 							return;
@@ -188,21 +200,26 @@
 						slidermain.flickity('playPlayer'); // Запуск слайдера
 						that.inc++;
 
-						//callback
-						if( typeof callbackFunction == "function" ) callbackFunction();
+						if( typeof obj.success == "function" ) obj.success(); //callback
 
 					},
 					statusCode: {
 						404: function(){ alert( "По адресу: " + Pic.url + " Страницы не найдена" ); }
 					},
 					complete: function(response){
-						//callback
-						if( typeof callbackFunction == "function" ) callbackFunction();
+						if( typeof obj.complete == "function" ) obj.complete(); //callback
+						if( response.statusText == "error"){
+							Pic.statusLastResp = true;
+						}
 					}
 				});
 			},
-			selectId: function ( id ) {
-				var index = slidermain.find( "[id-data=" + id + "]" ).eq(0).index();
+			selectNewSlide: function (){
+				var newSlide = $(this.slideItemClass).filter(":not(.is-shown)");
+				this.selectSlide(newSlide);
+			},
+			selectSlide: function ( el ) {
+				var index = slidermain.find(el).eq(0).index();
 				slidermain.flickity( 'select', index );
 			}	
 		}
@@ -221,7 +238,6 @@
 
 
 
-		///appendTemplate( 14, "img/slider/wedding-3.jpg" );
 
 
 
@@ -374,65 +390,5 @@ function intSpace( int, replaceType ){
 
 
 
-
-
-
-
-/* СЛАЙДЕР */
-var slideIndex = 0;
-//showSlides();
-
-function plusSlides(n) {
-    showSlides(slideIndex += n);
-}
-
-// Thumbnail image controls
-function currentSlide(n) {
-    showSlides(slideIndex = n);
-}
-
-function showSlides() {
-    var i;
-    var slides = document.getElementsByClassName("slider-item");
-    if (slides.length == 0) {
-        setTimeout(function() {
-            location.reload();
-        }, 3000);
-    }
-    //var dots = document.getElementsByClassName("dot");
-    for (i = 0; i < slides.length; i++) {
-        slides[i].style.display = "none";
-    }
-    slideIndex++;
-    if (slideIndex > slides.length) { slideIndex = 1 }
-    //for (i = 0; i < dots.length; i++) {
-    //  dots[i].className = dots[i].className.replace(" active", "");
-    //}
-    slides[slideIndex - 1].style.display = "block";
-
-    // Меняем showed через аякс
-/*    
-    $.post(
-        "/vendor/raiym/instagram-php-scraper/examples/changeShowed.php", {
-            mediaId: $(slides[slideIndex - 1]).attr("id-data")
-        },
-        onAjaxSuccess
-    );
-*/
-    function onAjaxSuccess(data) {
-        // Здесь мы получаем данные, отправленные сервером и выводим их на экран.
-        //alert(data);
-    }
-
-    //dots[slideIndex-1].className += " active";
-    if (slideIndex == slides.length) {
-        setTimeout(function() {
-            //location.reload();
-        }, 2000);
-    } else {
-        setTimeout(showSlides, 2000); // Change image every 2 seconds
-    }
-}
-//http://192.168.1.60/modules/changeShowed.php
 
 

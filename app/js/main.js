@@ -9,63 +9,10 @@
 
 
 
-		/* SELECT2 */
-		if ( $(".js-select").length )
-			$(".js-select").select2({
-				placeholder: "Выберите...",
-				// ajax: {
-				//   url: 'https://api.github.com/search/repositories',
-				//   dataType: 'json'
-				//   // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
-				// },
-				allowClear: false
-			});
-		
-		if ( $(".js-select").length )
-		$(".js-select.search-hide").select2({
-			minimumResultsForSearch: Infinity
-		});
-
-
-
-
-
-
-
-
-		/*FANCYboxWidth*/
-		if ($("[data-fancyboxWidth]").length != 0)
-			$("[data-fancyboxWidth]").fancyboxWidth({
-				afterShow: function(instance, current) {},
-				animationEffect : "zoom",
-				animationDuration : 800,
-				thumbs : {
-					autoStart   : true
-				},
-				touch : false,
-				transitionDuration : 366,
-				transitionEffect: "zoom-in-out"
-			});
-		// SMOTHSCROLL-LINK
-		if( "smoothScroll" in window )
-			smoothScroll.init({
-				easing: 'easeInOutCubic',
-				offset: 85
-			});
-
-
-
-
-
-
-
-
-
-
 		//Основной Слайдер
 		window.slidermain = $(".slidermain-items").flickity({
 			imagesLoaded: true,
-			autoPlay: 2000,
+			autoPlay: 200000000,
 			pauseAutoPlayOnHover: true,
 			//arrowShape: arrowStyle,
 			initialIndex: 0,
@@ -89,7 +36,6 @@
 			if (bob){
 				if($(Pic.slideItemClass).length <= 0){
 					bob = false;
-					
 					Pic.parser(function(){
 						bob = true;
 					})
@@ -101,7 +47,7 @@
 
 		function stepSlide(currentSlide){
 
-			//console.log("stepSlide");
+			console.log(Pic.responseError);
 
 			currentSlide.addClass("is-shown");
 
@@ -119,10 +65,10 @@
 			// Запрос на картинки
 			Pic.parser({
 				success: function(){
-					// if( Pic.statusLastResp ){
-					// 	Pic.selectNewSlide();
-					// 	Pic.statusLastResp = false;
-					// }
+					if( Pic.responseError ){
+						Pic.selectNewSlide();
+						Pic.responseError = false;
+					}
 				}
 			}); 
 			if( Pic.maxLenght <= slidesLength ){
@@ -146,13 +92,13 @@
 			var currentSlide = $(Pic.slideItemClass).filter(".is-selected");
 			Pic.currentSlide = currentSlide;
 			var rand = IntRandom();
-			var selectId = currentSlide.attr( Pic.attrFigureId );
+			var selectId = currentSlide.attr( Pic._attrFigureId );
 			
 			if ( selectId && selectId == figurePrevId )
 				return;
 
-			currentSlide.attr(Pic.attrFigureId, rand);
-			figurePrevId = currentSlide.attr(Pic.attrFigureId);
+			currentSlide.attr(Pic._attrFigureId, rand);
+			figurePrevId = currentSlide.attr(Pic._attrFigureId);
 			stepSlide(currentSlide);
 
 		});
@@ -165,8 +111,10 @@
 			maxLenght:  5, // Максимальное кол-во элементов в слайдере
 			inc: 0,
 			currentSlide: undefined,
-			attrFigureId: "figure-id",
-			statusLastResp: false,
+			responseError: false,
+			_attrFigureId: "figure-id",
+
+
 			appendTemplate:  function ( id, img ) {
 				var newTemp = this.template	.replace(/{id-data}/gim, id)
 																		.replace(/{figureIdRandom}/gim, IntRandom())
@@ -176,7 +124,6 @@
 			},
 
 			parser: function(obj){
-
 				var that = this;
 				$.ajax({
 					type: "POST",
@@ -188,9 +135,8 @@
 
 						try{
 							data = JSON.parse(data);
-							if( data+"" == "null")
-								Pic.statusLastResp = true;
 						}catch(err){
+							Pic.responseError = true;
 							slidermain.flickity('playPlayer'); // Запуск слайдера при отсутствии JSON данных
 							return;
 						}
@@ -210,7 +156,7 @@
 					complete: function(response){
 						if( typeof obj.complete == "function" ) obj.complete(); //callback
 						if( response.statusText == "error"){
-							Pic.statusLastResp = true;
+							Pic.responseError = true;
 						}
 					}
 				});
@@ -225,7 +171,7 @@
 			}	
 		}
 		Pic.template = 						
-									'<figure class="slider-item" id-data="{id-data}" ' + Pic.attrFigureId + '="{figureIdRandom}" >'+
+									'<figure class="slider-item" id-data="{id-data}" ' + Pic._attrFigureId + '="{figureIdRandom}" >'+
 										'<div class="img-content">'+
 											'<div class="img-wrapper">'+
 												'<div class="img" style="background-image: url(\'{img}\');"></div>'+
@@ -339,55 +285,6 @@ function getRandomInt(min, max) {
 function getRandomIntFloat(min, max) {
 	return Math.random() * (max - min) + min;
 }
-
-function onResized(f) {
-	if (typeof f === "function") f();
-	$(window).on("resize", function(e) {
-		if (typeof f === "function") f();
-	});
-	return this;
-}
-
-function scrolledDiv(el) {
-	try {
-		var docViewTop = $(window).scrollTop(),
-			docViewBottom = docViewTop + $(window).height(),
-			elTop = $(el).offset().top,
-			elBottom = elTop + $(el).height() / 1.8;
-	} catch (err) {
-		console.error();
-	}
-
-	return elBottom <= docViewBottom && elTop >= docViewTop;
-}
-
-function roundFix( num, cnt ){
-	num = num+""
-	cnt = cnt + (/./.test(num) || null ? 1 : 0);
-	return num.substring( 0,  cnt)*1
-}
-
-function intSpace( int, replaceType ){
-		var cnt = 0;
-		var newInt = "";
-		int = int*1;
-		replaceType = replaceType || " ";
-		if( typeof int === NaN )
-			return;
-		var arrInt = (int+"").match(/([0-9])/gim).reverse();
-		for (var i = 0; i < arrInt.length; i++) {
-			cnt++;
-			newInt = arrInt[i]+newInt
-			if(cnt === 3){
-				newInt = replaceType+newInt;
-				cnt = 0;
-			}
-		}
-		return newInt;
-}
-
-
-
 
 
 

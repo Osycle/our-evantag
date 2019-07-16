@@ -31,6 +31,7 @@ figcaption{
 }
 
 main{
+	overflow: hidden;
 	p{
 		line-height: 160%;
 	}
@@ -206,15 +207,52 @@ main{
 	figure{
 		left: 0 !important;
 		width: 100%;
-		perspective-origin: 0 50%;
-		perspective: 500px;
 		.img-content{
 			opacity: 0;
 			transition: all 1s ease;
 		}
+
 		&.is-selected{
 			.img-content{
 				opacity: 1;
+			}
+		}
+	}
+}
+
+
+.perspective-slides{
+	.tofu-box.imgs{
+		background-color: transparent;
+		box-shadow: none;
+	}
+	.slidermain-items{
+		.flickity-viewport{
+			overflow: visible;
+		}
+		figure{
+			.img-content{
+				perspective-origin: center;
+    		//perspective: 400px;
+    		perspective: 100vw;
+    		transform: translateX(50%);
+    		transition: all 3s ease;
+    		opacity: 1;
+    		.img{
+    		}
+			}
+			.img-wrapper{
+    		box-shadow: 0 0 60px -8px rgba(black, 0.3);
+				transition: all 3s ease;
+				transform: rotateY(90deg) scale(0.84);
+			}
+			&.is-selected{
+				.img-content{
+					transform: rotateY(0);		
+				}
+				.img-wrapper{
+					transform: rotateY(0);
+				}
 			}
 		}
 	}

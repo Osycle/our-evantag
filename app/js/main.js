@@ -161,14 +161,15 @@
 		window.Pic = {
 
 			slideItemClass: ".slider-item", // Класс для элементов слайдера
-			url: "http://192.168.0.125/modules/getMedias.php", // Адрес запроса
-			maxLenght:  6, // Максимальное кол-во элементов в слайдере
+			url: "./instagramData.html", // Адрес запроса (http://192.168.0.125/modules/getMedias.php)
+			maxLenght:  5, // Максимальное кол-во элементов в слайдере
 			inc: 0,
 			currentSlide: undefined,
 			attrFigureId: "figure-id",
 			statusLastResp: false,
 			appendTemplate:  function ( id, img ) {
 				var newTemp = this.template	.replace(/{id-data}/gim, id)
+																		.replace(/{figureIdRandom}/gim, IntRandom())
 																		.replace(/{img}/gim, img);
 			  slidermain.flickity( 'append', $(newTemp) );
 
@@ -187,8 +188,8 @@
 
 						try{
 							data = JSON.parse(data);
-							// if( data+"" == "null")
-							// 	Pic.statusLastResp = true;
+							if( data+"" == "null")
+								Pic.statusLastResp = true;
 						}catch(err){
 							slidermain.flickity('playPlayer'); // Запуск слайдера при отсутствии JSON данных
 							return;
@@ -224,7 +225,7 @@
 			}	
 		}
 		Pic.template = 						
-									'<figure class="slider-item" id-data="{id-data}" ' + Pic.attrFigureId + '="' + IntRandom() + '" >'+
+									'<figure class="slider-item" id-data="{id-data}" ' + Pic.attrFigureId + '="{figureIdRandom}" >'+
 										'<div class="img-content">'+
 											'<div class="img-wrapper">'+
 												'<div class="img" style="background-image: url(\'{img}\');"></div>'+

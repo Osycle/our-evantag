@@ -12,8 +12,8 @@
 		//Основной Слайдер
 		window.slidermain = $(".slidermain-items").flickity({
 			imagesLoaded: true,
-			autoPlay: 200000000,
-			pauseAutoPlayOnHover: true,
+			autoPlay: 3000,
+			pauseAutoPlayOnHover: false,
 			//arrowShape: arrowStyle,
 			initialIndex: 0,
 			prevNextButtons: false,
@@ -31,13 +31,16 @@
 
 
 
-		var startParseInterval = setInterval(function(){
+		window.startParseInterval = setInterval(function(){
 			if ( typeof bob == "undefined" ) window.bob = true;
 			if (bob){
-				if($(Pic.slideItemClass).length <= 0){
+				if($(Pic.slideItemClass).length == 1){
 					bob = false;
-					Pic.parser(function(){
-						bob = true;
+					Pic.parser({
+						success: function(){
+							bob = true;
+							console.info("clearInterval Parsing");
+						}
 					})
 				}
 				else
@@ -47,7 +50,6 @@
 
 		function stepSlide(currentSlide){
 
-			console.log(Pic.responseError);
 
 			currentSlide.addClass("is-shown");
 
@@ -56,18 +58,12 @@
 			var lastIndex = slides.eq( $(Pic.slideItemClass).length-1 ).index() ;
 			var slidesLength = $(Pic.slideItemClass).length;
 
-			// if( lastIndex == currentIndex){
-			// 	slidermain.flickity('stopPlayer'); // Остановка слайдера
-			// 	Pic.parser(); // Запрос на картинки
-			// }
-
 
 			// Запрос на картинки
 			Pic.parser({
 				success: function(){
 					if( Pic.responseError ){
 						Pic.selectNewSlide();
-						Pic.responseError = false;
 					}
 				}
 			}); 
@@ -107,11 +103,12 @@
 		window.Pic = {
 
 			slideItemClass: ".slider-item", // Класс для элементов слайдера
-			url: "./instagramData.html", // Адрес запроса (http://192.168.0.125/modules/getMedias.php)
+			url: "http://192.168.0.120/modules/getMedias.php", // Адрес запроса (http://192.168.0.125/modules/getMedias.php)
+			//url: "instagramData.html",
 			maxLenght:  5, // Максимальное кол-во элементов в слайдере
 			inc: 0,
 			currentSlide: undefined,
-			responseError: false,
+			responseError: 0,
 			_attrFigureId: "figure-id",
 
 
@@ -134,7 +131,10 @@
 					success: function(data){
 
 						try{
-							data = JSON.parse(data);
+							data = JSON.parse(data)
+							if( data == null ){
+							 	that.responseError = true;
+							}
 						}catch(err){
 							Pic.responseError = true;
 							slidermain.flickity('playPlayer'); // Запуск слайдера при отсутствии JSON данных
@@ -162,8 +162,11 @@
 				});
 			},
 			selectNewSlide: function (){
-				var newSlide = $(this.slideItemClass).filter(":not(.is-shown)");
-				this.selectSlide(newSlide);
+				var newSlide = $(Pic.slideItemClass).filter(":not(.is-shown)");
+				if(newSlide.length != 0){
+					Pic.selectSlide(newSlide);
+					Pic.responseError = false;
+				}
 			},
 			selectSlide: function ( el ) {
 				var index = slidermain.find(el).eq(0).index();
